@@ -1,0 +1,2 @@
+The error-checking scheme used by Ethernet is the Cyclic Redundancy Check (CRC).
+This is a more robust extension of the simple parity idea.
