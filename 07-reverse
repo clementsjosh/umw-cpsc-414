@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Ian Finlayson">
+
+<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+<link href="https://fonts.googleapis.com/css?family=Noto+Sans:400,400i,700,700i" rel="stylesheet">
+
+<link rel="stylesheet" href="/style/style.css">
+
+<script src="/scripts/smartquotes.js"></script>
+<script src="/scripts/highlight.pack.js"></script>
+<script src="/scripts/preCode.js"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+    "HTML-CSS": {
+        availableFonts : ["Asana"],
+        preferredFont : "Asana",
+        webFont : "Asana",
+        imageFont : null
+  }
+});
+</script>
+<script src="/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+<script>
+function iansetup() {
+    smartquotes();
+    hljs.initHighlighting();
+}
+</script>
+
+<title>Lab 7: Reverse Engineering</title>
+</head>
+
+<body onload="iansetup()">
+<div class="topnav">
+<a href="/">Home</a>
+<a href="/class/cpsc414/">CPSC 414</a><div class="dropdown">
+<a class="dropbtn">Contents ▼</a>
+<div class="dropdown-content">
+<a href="#objective">Objective</a>
+<a href="#tshark-filtering">TShark Filtering</a>
+<a href="#seeing-packet-data">Seeing Packet Data</a>
+<a href="#task">Task</a>
+<a href="#questions">Questions</a>
+<a href="#submitting">Submitting</a>
+</div></div>    <a href="http://www.umw.edu/" class="logo"><img src="/images/logo.png" width="50rem" alt="UMW"></a>
+</div>
+
+<h1>Lab 7: Reverse Engineering</h1>
+
+
+<a class="anchor" id="objective">&nbsp;</a>
+<h2>Objective</h2>
+
+<p>To experiment with using TShark to analyze how an unknown application is
+communicating, and what data it is sending and receiving.</p>
+
+
+<hr />
+<a class="anchor" id="tshark-filtering">&nbsp;</a>
+<h2>TShark Filtering</h2>
+
+<p>When using TShark on the Google Cloud VM, there is a lot of extra "noise"
+caused by the fact that we are connected over SSH.  The SSH client on your
+machine sends regular updates to the SSH server running on your VM.</p>
+
+<p>In order to not have these show up, you can use the "not port 22" filter
+like this:</p>
+
+<pre class="shell">
+$ tshark -f "not port 22"
+</pre>
+
+<p>Now TShark will print all of the packets it gets, but not the ones coming in
+or going out on port 22 (which is the SSH port).  There will still be some
+"noise" packets coming in, but it will be many less.</p>
+
+<p>To see this, run this command in one window, and then connect a second SSH
+window to your VM.  Run the following command in that window:</p>
+
+<pre class="shell">
+$ wget http://ianfinlayson.net/class/cpsc414/labs/07-reverse
+</pre>
+
+<p>This will download the HTML page for this lab to your VM.  You should at
+that point see a flurry of packets coming in for the HTTP request.</p>
+
+
+<hr />
+<a class="anchor" id="seeing-packet-data">&nbsp;</a>
+<h2>Seeing Packet Data</h2>
+
+<p>So far we have only used TShark to print various packet fields at the
+different network layers.  But we can also use it to print the <i>data</i>
+being sent in those packets.  This can be done with the "-x" flag:</p>
+
+<pre class="shell">
+$ tshark -f "not port 22" -x
+</pre>
+
+<p>This will print packet data onto the screen in a format like this:</p>
+
+<pre class="shell">
+$ tshark -f "not port 22" -x
+0000  42 01 0a 8e 00 01 42 01 0a 8e 00 03 08 00 45 00   B.....B.......E.
+0010  00 34 3b cb 40 00 40 06 91 90 0a 8e 00 03 23 cf   .4;.@.@.......#.
+0020  3f 09 cc 00 00 50 54 04 45 d6 89 74 53 37 80 11   ?....PT.E..tS7..
+0030  01 45 6d 8f 00 00 01 01 08 0a fc ad f5 9c fa 6f   .Em............o
+0040  fa 4d                                             .M
+</pre>
+
+<p>There are three main sections here:</p>
+
+<ol>
+
+<li>The leftmost values are just index markers indicating which byte numbers
+are on this row.</li>
+
+<li>The 16 hexadecimal numbers on each row give the raw byte values that are in
+the packets data section.  So the first byte in this packet has the value 0x42
+and the last has value 0x4d.</li>
+
+<li>The values on the far right are the ASCII representations of each byte.  If
+the byte corresponds to a printable ASCII value (like 0x42 is B), it will be
+printed.  If not (like 0x01 is not printable) it will put a .  These let you
+check if the data is readable text or not.  Here, it's not.</li>
+
+</ol>
+
+<p>Looking at the data can show you what an application is doing on the
+network.  Try to run the wget command again.  You should see the HTML text of
+the lab page show up in the TShark output.</p>
+
+
+<hr />
+<a class="anchor" id="task">&nbsp;</a>
+<h2>Task</h2>
+
+<p>You will be doing some analysis on a network program called "prog".  You can
+download it with the following command:</p>
+
+<pre class="shell">
+$ wget http://ianfinlayson.net/class/cpsc414/labs/prog
+</pre>
+
+<p>Then give it executable permissions so you can run it:</p>
+
+<pre class="shell">
+$ chmod +x prog
+</pre>
+
+
+<p>You should run this program in one window and TShark in another window, so
+you can see what packets it's sending and receiving.</p>
+
+<p>You will need to get TShark to print some other information from packet
+headers, such as IPs and ports.  If you leave off the "-x", then TShark will
+print this information for you.  I recommend finding the IP and port first,
+then you can use "-f port XXXX" as a filter which will only print the packets
+for this program.</p>
+
+<hr />
+<a class="anchor" id="questions">&nbsp;</a>
+<h2>Questions</h2>
+
+<ol>
+
+<li>What IP address is this program communicating with?</li>
+
+<li>What port on that IP is it communicating through?</li>
+
+<li>How many packets are sent back and forth between the two machines when the
+program is run?</li>
+
+<li>Is this program using TCP or UDP?</p>
+
+<li>What text is being sent over the network between the two machines?  Not all
+of the packets have text data (many are just TCP handshakes, ACKs, or FINs).
+Scan through the packet data and make a note of anything in readable text.</li>
+
+<li>Why is it important that network applications use encryption for sensitive
+data?</p>
+
+</ol>
+
+
+<hr />
+<a class="anchor" id="submitting">&nbsp;</a>
+<h2>Submitting</h2>
+
+<p>When you're finished, email your answers to <a href="mailto:ifinlay@umw.edu">ifinlay@umw.edu</a>.</p>
+
+
+<p class="text-center"><small>Copyright &copy;
+
+2025
+Ian Finlayson | Licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons BY-NC-SA 4.0</a> License.</small>
+</body>
+</html>
+
+
