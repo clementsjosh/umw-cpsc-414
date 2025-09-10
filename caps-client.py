@@ -3,7 +3,7 @@
 import socket
 
 # the host we are connecting to and the port
-HOST = "34.73.15.22"
+HOST = "127.0.0.1"
 PORT = 5220
 
 # create our socket
