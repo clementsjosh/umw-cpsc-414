@@ -3,7 +3,7 @@
 import socket
 
 # host (internal) IP address and port
-HOST = "10.142.0.3"
+HOST = "127.0.0.1"
 PORT = 5220
 
 # create our socket
