@@ -7,8 +7,8 @@ f = open("pi.txt", "r")
 pi = f.read()
 
 # TODO - put in these values
-HOST = ""
-PORT = 0
+HOST = "cpsc.umw.edu"
+PORT = 41400
 
 # create our UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
