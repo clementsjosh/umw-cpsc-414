@@ -18,28 +18,34 @@ sock.bind((HOST, PORT))
 # listen for any clients connecting
 sock.listen()
 
-# wait for a client to connect to us
-# accept a connection which has come through
-conn, addr = sock.accept()
-print("Connection from:", addr)
+while True:
 
-# read some bytes from the client
-data = conn.recv(1024)
+    waiting = input("Waiting for connection. Press q to quit: ")
+    if waiting == 'q':
+        break
 
-# decode it into a string
-string = data.decode()
+    # wait for a client to connect to us
+    # accept a connection which has come through
+    conn, addr = sock.accept()
+    print("Connection from:", addr)
 
-# convert it to uppercase
-string = string.upper()
+    # read some bytes from the client
+    data = conn.recv(1024)
 
-# now encode the data for sending back
-data = string.encode()
+    # decode it into a string
+    string = data.decode()
 
-# send it back
-conn.sendall(data)
+    # convert it to uppercase
+    string = string.upper()
 
-# and done
-conn.close()
+    # now encode the data for sending back
+    data = string.encode()
+
+    # send it back
+    conn.sendall(data)
+
+    # and done
+    conn.close()
 
 # done with listening on our socket to
 sock.close()
