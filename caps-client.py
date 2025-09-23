@@ -4,7 +4,7 @@ import socket
 
 # the host we are connecting to and the port
 HOST = "127.0.0.1"
-PORT = 5220
+PORT = 41400
 
 # create our socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

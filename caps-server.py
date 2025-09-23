@@ -1,10 +1,13 @@
 #!/usr/bin/python3
 
 import socket
+import select
+import sys
+
 
 # host (internal) IP address and port
 HOST = "127.0.0.1"
-PORT = 5220
+PORT = 41400
 
 # create our socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -18,35 +21,41 @@ sock.bind((HOST, PORT))
 # listen for any clients connecting
 sock.listen()
 
-while True:
+print(f'Server running on {HOST}:{PORT}. Type "q" and press Enter to quit.')
 
-    waiting = input("Waiting for connection. Press q to quit: ")
-    if waiting == 'q':
-        break
+running = True
 
-    # wait for a client to connect to us
-    # accept a connection which has come through
-    conn, addr = sock.accept()
-    print("Connection from:", addr)
+while running:
+    
+    reads, writes, errors = select.select([sys.stdin, sock], [], [])
 
-    # read some bytes from the client
-    data = conn.recv(1024)
+    for read in reads:
+        if read is sys.stdin:
+            user_input = sys.stdin.readline().strip()
+            if user_input.lower()[0] == 'q':
+                running = False
+        elif read is sock:
+            # accept a connection which has come through
+            conn, addr = sock.accept()
+            print("Connection from:", addr)
 
-    # decode it into a string
-    string = data.decode()
+            # read some bytes from the client
+            data = conn.recv(1024)
 
-    # convert it to uppercase
-    string = string.upper()
+            # decode it into a string
+            string = data.decode()
 
-    # now encode the data for sending back
-    data = string.encode()
+            # convert it to uppercase
+            string = string.upper()
 
-    # send it back
-    conn.sendall(data)
+            # now encode the data for sending back
+            data = string.encode()
 
-    # and done
-    conn.close()
+            # send it back
+            conn.sendall(data)
 
-# done with listening on our socket to
+            # and done
+            conn.close()
+
 sock.close()
-
+print("Quitting... have a nice day.")
