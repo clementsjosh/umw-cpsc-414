@@ -52,6 +52,7 @@ while running:
             data = string.encode()
 
             # send it back
+            print(f"Sending {string} to {addr}")
             conn.sendall(data)
 
             # and done
