@@ -210,6 +210,7 @@ def main():
         # accept a connection which has come through
         conn, addr = s.accept()
         thread = threading.Thread(target = handle_new_client, args = (conn, addr))
+        thread.daemon = True
         thread.start()
 
 # launch the whole thang
