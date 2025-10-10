@@ -7,7 +7,7 @@ import select
 import copy
 
 # host (internal) IP address and port
-HOST = '10.128.0.3'
+HOST = 'localhost'
 PORT = 41400
 
 # the amount of time after sending messages to avoid jumblies
@@ -213,7 +213,8 @@ def main():
         thread.start()
 
 # launch the whole thang
-main()
+if __name__ == '__main__':
+    main()
 
 
 
